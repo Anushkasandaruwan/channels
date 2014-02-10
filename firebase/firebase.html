@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Firebase</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.2/firebase.js'></script>
+        <script type='text/javascript' src='channelbase.js'></script>
+        <script>
+          // Manging presence
+          connectClient('yehancha');
+          
+          // ==================================================================================================
+          // ==================================================================================================
+          // ==================================================================================================
+          // ==================================================================================================
+          
+          onChannelAdd(function (channel) {
+            document.getElementById('channel_list').innerHTML += channel.child('name').val() + '<br />';
+          });
+          
+          function onClickCreateChannel() {
+            var userId = document.getElementById('user_id').value;
+            var channelName = document.getElementById('channel_name').value;
+            
+            if (userId === '' || channelName === '') {
+              alert('UserId and ChannelName are mandatory');
+              return;
+            }
+            
+            var channelId = channelName.replace(' ', '_');
+            var channelDesc = document.getElementById('channel_desc').value;
+            createChannel(userId, channelId, channelName, channelDesc, function () {
+              alert('Already exists');
+            });
+            
+            document.getElementById('channel_name').value = '';
+            document.getElementById('channel_desc').value = '';
+          }
+          
+          var voteArray = new Array();
+          function onClickWatchChannel() {
+            var channelId = document.getElementById('channel_id').value;
+            if (channelId === '') {
+              alert('Channel id is a must');
+              return;
+            }
+            
+            onShowsChange(channelId, function (shows) {
+              document.getElementById('show_list').innerHTML = '';
+              shows.forEach(function (show) {
+                document.getElementById('show_list').innerHTML += show.child('name').val() + '<br />';
+              });
+            });
+            
+            onShowAdd(channelId, function (show) {
+              voteArray[voteArray.length] = onVotesChange(channelId, show.name(), function (voteCount) {
+                alert('Votes change: show=' + show.name() + ' votes=' + voteCount);
+              });
+            });
+          
+            onCurrentShowChange(channelId, function (showLink, showName, showDesc, startTime) {
+              document.getElementById('current_show').innerHTML = 'Link: ' + showLink + '<br />' + 'Name: ' + showName + '<br />' + 'Description: ' + showDesc + '<br />' + 'StartTime: ' + startTime;
+            });
+          }
+          
+          function onClickStopWatch() {
+            voteArray.forEach(function (votes) {
+              votes.off();
+            });
+          }
+          
+          function onClickAddShow() {
+            var channelId = document.getElementById('channel_id').value;
+            var userId = document.getElementById('user_id').value;
+            var showName = document.getElementById('show_name').value;
+            
+            if (userId === '' || channelId === '' || showName === '') {
+              alert('UserId, ChannelName and ShowId are mandatory');
+              return;
+            }
+            
+            var showId = showName.replace(' ', '_');
+            var showLink = 'dummy';
+            var showDesc = document.getElementById('show_desc').value;
+            
+            addOrVoteShow(userId, channelId, showId, showName, showLink, showDesc, function (vote) {
+              vote.onDisconnect().remove();
+            });
+            
+            document.getElementById('show_name').value = '';
+            document.getElementById('show_desc').value = '';
+          }
+          
+          function onClickUnvoteShow() {
+            var userId = document.getElementById('user_id').value;
+            var channelId = document.getElementById('channel_id').value;
+            var showName = document.getElementById('show_name').value;
+            if (userId === '' || channelId === '' || showName === '') {
+              alert('ChannelName and ShowId are mandatory');
+              return;
+            }
+            var showId = showName.replace(' ', '_');
+            unvoteShow(userId, channelId, showId);
+          }
+          
+          function onClickNextShow() {
+            var channelId = document.getElementById('channel_id').value;
+            
+            if (channelId === '') {
+              alert('Channel id is a must');
+            }
+            
+            var showLink = 'dummy_link';
+            var showName = document.getElementById('show_name').value;
+            var showDesc = document.getElementById('show_desc').value;
+            startNewShow(channelId, showLink, showName, showDesc);
+          }
+        </script>
+    </head>
+    <body>
+      <input type='text' id='user_id' placeholder='User id' /><br /><br />
+      
+      <input type='text' id='channel_name' placeholder='Channel name' />
+      <input type='text' id='channel_desc' placeholder='Channel description' />
+      <input type='button' value='Create channel' onClick='onClickCreateChannel()' /><br /><br />
+      
+      <div id='channel_list'></div><br /><br />
+      
+      <input type='text' id='channel_id' placeholder='Channel id' />
+      <input type='button' value='Watch channel' onClick='onClickWatchChannel()' />
+      <input type='button' value='Stop watch channel' onClick='onClickStopWatch()' /><br /><br />
+      <input type='text' id='show_name' placeholder='Show name' />
+      <input type='text' id='show_desc' placeholder='Show description' />
+      <input type='button' value='Add show' onClick='onClickAddShow()' />
+      <input type='button' value='Unvote show' onClick='onClickUnvoteShow()' /><br /><br />
+      
+      <div id='current_show'></div><br />
+      <div id='show_list'></div><br />
+      <input type='button' value='Next show' onClick='onClickNextShow()' /><br /><br />
+    </body>
+</html>
