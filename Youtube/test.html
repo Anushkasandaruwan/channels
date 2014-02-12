@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+  <body>
+   
+    <div id="player" ></div>
+    <script>
+     function onclickPlay(){
+     	playYoutube("http://www.youtube.com/watch?v=7M-jsjLB20Y","0",onComlete);
+     }
+     function onComlete(){
+     	alert("The END");
+     }
+     function search(){
+     	SearchYouTube(document.getElementById('input'),onComlete);
+     }
+     function searchId(){
+     	SearchOneYouTube("http://www.youtube.com/watch?v=7M-jsjLB20Y",onComlete);
+     }
+    </script>
+    <input type="button" onclick="onclickPlay()">
+    <input type="button" onclick="searchId()">
+    <input type="text" id="queryinput" />
+<!--<input type="submit" value="Search" onclick="javascript:SearchYouTube(document.getElementById('queryinput').value)" />-->
+<input type="submit" id = "input" value="Search" onclick="search()" />
+<div id="search-results-block"></div>
+<script type="text/javascript" src="http://ajax.googleapis.com/
+ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    
+   <script src="js/youtube.js"></script>
+
+  </body>
+</html>
